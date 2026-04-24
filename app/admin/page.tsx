@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 
@@ -54,6 +55,24 @@ export default async function AdminPage() {
                     <StatCard title="Total Captions" value={captionsCount} />
                     <StatCard title="Total Votes" value={votesCount} />
                 </div>
+
+                <div className="mt-10 grid gap-4 sm:grid-cols-3">
+                    <AdminLink
+                        href="/admin/users"
+                        title="Users / Profiles"
+                        description="Read user profile records"
+                    />
+                    <AdminLink
+                        href="/admin/images"
+                        title="Images"
+                        description="Create, read, update, and delete images"
+                    />
+                    <AdminLink
+                        href="/admin/captions"
+                        title="Captions"
+                        description="Read generated captions"
+                    />
+                </div>
             </div>
         </main>
     )
@@ -65,5 +84,25 @@ function StatCard({ title, value }: { title: string; value: number }) {
             <p className="text-sm font-medium text-slate-500">{title}</p>
             <p className="mt-3 text-3xl font-bold text-slate-900">{value}</p>
         </div>
+    )
+}
+
+function AdminLink({
+                       href,
+                       title,
+                       description,
+                   }: {
+    href: string
+    title: string
+    description: string
+}) {
+    return (
+        <Link
+            href={href}
+            className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+        >
+            <h2 className="text-xl font-bold text-slate-900">{title}</h2>
+            <p className="mt-2 text-sm text-slate-600">{description}</p>
+        </Link>
     )
 }
