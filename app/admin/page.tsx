@@ -22,9 +22,7 @@ export default async function AdminPage() {
         data: { user },
     } = await supabase.auth.getUser()
 
-    if (!user) {
-        redirect("/login")
-    }
+    if (!user) redirect("/login")
 
     const { data: profile, error: profileError } = await supabase
         .from("profiles")
@@ -45,9 +43,9 @@ export default async function AdminPage() {
 
     return (
         <main className="min-h-screen bg-slate-50 p-8">
-            <div className="mx-auto max-w-6xl">
+            <div className="mx-auto max-w-7xl">
                 <h1 className="mb-2 text-4xl font-bold text-slate-900">Admin Dashboard</h1>
-                <p className="mb-8 text-slate-600">Week 6 starter dashboard for Humor Project</p>
+                <p className="mb-8 text-slate-600">Week 7 domain model admin dashboard</p>
 
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                     <StatCard title="Total Users" value={usersCount} />
@@ -56,22 +54,35 @@ export default async function AdminPage() {
                     <StatCard title="Total Votes" value={votesCount} />
                 </div>
 
-                <div className="mt-10 grid gap-4 sm:grid-cols-3">
-                    <AdminLink
-                        href="/admin/users"
-                        title="Users / Profiles"
-                        description="Read user profile records"
-                    />
-                    <AdminLink
-                        href="/admin/images"
-                        title="Images"
-                        description="Create, read, update, and delete images"
-                    />
-                    <AdminLink
-                        href="/admin/captions"
-                        title="Captions"
-                        description="Read generated captions"
-                    />
+                <h2 className="mt-10 mb-4 text-2xl font-bold text-slate-900">Core Admin</h2>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <AdminLink href="/admin/users" title="Users / Profiles" description="Read user profile records" />
+                    <AdminLink href="/admin/images" title="Images" description="Create, read, update, and delete images" />
+                    <AdminLink href="/admin/captions" title="Captions" description="Read generated captions" />
+                    <AdminLink href="/admin/caption-requests" title="Caption Requests" description="Read caption generation requests" />
+                    <AdminLink href="/admin/caption-examples" title="Caption Examples" description="Create, read, update, and delete caption examples" />
+                    <AdminLink href="/admin/terms" title="Terms" description="Create, read, update, and delete humor terms" />
+                </div>
+
+                <h2 className="mt-10 mb-4 text-2xl font-bold text-slate-900">Humor Model</h2>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <AdminLink href="/admin/humor-flavors" title="Humor Flavors" description="Read humor flavor records" />
+                    <AdminLink href="/admin/humor-flavor-steps" title="Humor Flavor Steps" description="Read humor flavor step records" />
+                    <AdminLink href="/admin/humor-flavor-mix" title="Humor Flavor Mix" description="Read and update humor flavor mix" />
+                </div>
+
+                <h2 className="mt-10 mb-4 text-2xl font-bold text-slate-900">LLM System</h2>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <AdminLink href="/admin/llm-providers" title="LLM Providers" description="Create, read, update, and delete LLM providers" />
+                    <AdminLink href="/admin/llm-models" title="LLM Models" description="Create, read, update, and delete LLM models" />
+                    <AdminLink href="/admin/llm-prompt-chains" title="LLM Prompt Chains" description="Read LLM prompt chain records" />
+                    <AdminLink href="/admin/llm-responses" title="LLM Responses" description="Read LLM response logs" />
+                </div>
+
+                <h2 className="mt-10 mb-4 text-2xl font-bold text-slate-900">Access Control</h2>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <AdminLink href="/admin/allowed-signup-domains" title="Allowed Signup Domains" description="Create, read, update, and delete allowed signup domains" />
+                    <AdminLink href="/admin/whitelisted-email-addresses" title="Whitelisted Email Addresses" description="Create, read, update, and delete whitelisted emails" />
                 </div>
             </div>
         </main>
