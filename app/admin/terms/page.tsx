@@ -31,6 +31,40 @@ async function createTerm(formData: FormData) {
     redirect("/admin/terms")
 }
 
+async function updateTerm(formData: FormData) {
+    "use server"
+
+    const id = Number(formData.get("id"))
+    const term = String(formData.get("term") ?? "").trim()
+    const definition = String(formData.get("definition") ?? "").trim()
+    const example = String(formData.get("example") ?? "").trim()
+    const priority = Number(formData.get("priority"))
+    const term_type_id = Number(formData.get("term_type_id"))
+
+    if (!id || !term || !definition || !example || Number.isNaN(priority) || !term_type_id) {
+        redirect("/admin/terms")
+    }
+
+    const supabase = await requireSuperAdmin()
+
+    const { error } = await supabase
+        .from("terms")
+        .update({
+            term,
+            definition,
+            example,
+            priority,
+            term_type_id,
+        })
+        .eq("id", id)
+
+    if (error) {
+        console.error("Error updating term:", error)
+    }
+
+    redirect("/admin/terms")
+}
+
 async function deleteTerm(formData: FormData) {
     "use server"
 
@@ -77,7 +111,7 @@ export default async function TermsPage() {
                     <div>
                         <h1 className="text-4xl font-bold text-slate-900">Terms</h1>
                         <p className="mt-2 text-slate-600">
-                            Create, read, and delete humor terms.
+                            Create, read, update, and delete humor terms.
                         </p>
                     </div>
 
@@ -138,12 +172,8 @@ export default async function TermsPage() {
                         <thead className="bg-slate-100 text-slate-700">
                         <tr>
                             <th className="px-4 py-3 font-semibold">ID</th>
-                            <th className="px-4 py-3 font-semibold">Term</th>
-                            <th className="px-4 py-3 font-semibold">Definition</th>
-                            <th className="px-4 py-3 font-semibold">Example</th>
-                            <th className="px-4 py-3 font-semibold">Priority</th>
-                            <th className="px-4 py-3 font-semibold">Term Type</th>
-                            <th className="px-4 py-3 font-semibold">Action</th>
+                            <th className="px-4 py-3 font-semibold">Term Details</th>
+                            <th className="px-4 py-3 font-semibold">Actions</th>
                         </tr>
                         </thead>
 
@@ -153,20 +183,48 @@ export default async function TermsPage() {
                                 <td className="px-4 py-3 font-mono text-xs text-slate-500">
                                     {t.id}
                                 </td>
-                                <td className="px-4 py-3 text-slate-900">
-                                    {t.term}
-                                </td>
-                                <td className="max-w-xs px-4 py-3 text-slate-700">
-                                    {t.definition}
-                                </td>
-                                <td className="max-w-xs px-4 py-3 text-slate-700">
-                                    {t.example}
-                                </td>
-                                <td className="px-4 py-3 text-slate-700">
-                                    {t.priority}
-                                </td>
-                                <td className="px-4 py-3 text-slate-700">
-                                    {t.term_type_id}
+                                <td className="px-4 py-3">
+                                    <form action={updateTerm} className="grid gap-3 md:grid-cols-2">
+                                        <input type="hidden" name="id" value={t.id} />
+                                        <input
+                                            name="term"
+                                            defaultValue={t.term}
+                                            className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                                        />
+                                        <input
+                                            name="priority"
+                                            type="number"
+                                            defaultValue={t.priority}
+                                            className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                                        />
+                                        <textarea
+                                            name="definition"
+                                            defaultValue={t.definition}
+                                            className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                                        />
+                                        <textarea
+                                            name="example"
+                                            defaultValue={t.example}
+                                            className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                                        />
+                                        <select
+                                            name="term_type_id"
+                                            defaultValue={t.term_type_id}
+                                            className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                                        >
+                                            {types.map((type) => (
+                                                <option key={type.id} value={type.id}>
+                                                    {type.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <button
+                                            type="submit"
+                                            className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700"
+                                        >
+                                            Update
+                                        </button>
+                                    </form>
                                 </td>
                                 <td className="px-4 py-3">
                                     <form action={deleteTerm}>

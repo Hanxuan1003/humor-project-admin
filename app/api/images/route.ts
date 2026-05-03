@@ -1,41 +1,19 @@
 import { createClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 
-function normalizePresignData(data: Record<string, unknown>) {
-    const presignedUrl =
-        data.presignedUrl ??
-        data.presigned_url ??
-        data.uploadUrl ??
-        data.upload_url ??
-        data.url
-
-    const rawImageUrl =
-        data.cdnUrl ??
-        data.cdn_url ??
-        data.imageUrl ??
-        data.image_url ??
-        data.publicUrl ??
-        data.public_url
-
-    return {
-        presignedUrl: typeof presignedUrl === "string" ? presignedUrl : null,
-        imageUrl: typeof rawImageUrl === "string" ? rawImageUrl : null,
-    }
-}
-
 export async function POST(req: NextRequest) {
     try {
-        const { contentType } = await req.json()
+        const { url } = await req.json()
+        const imageUrl = String(url ?? "").trim()
 
-        if (!contentType) {
+        if (!imageUrl) {
             return NextResponse.json(
-                { error: "Missing contentType" },
+                { error: "A valid image URL is required" },
                 { status: 400 }
             )
         }
 
         const supabase = await createClient()
-
         const {
             data: { user },
             error: userError,
@@ -73,39 +51,30 @@ export async function POST(req: NextRequest) {
             )
         }
 
-        const response = await fetch(
-            "https://api.almostcrackd.ai/pipeline/generate-presigned-url",
-            {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${session.access_token}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ contentType }),
-            }
-        )
+        const response = await fetch("https://api.almostcrackd.ai/pipeline/upload-image-from-url", {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${session.access_token}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                imageUrl,
+                isCommonUse: false,
+            }),
+        })
 
         const data = await response.json()
 
         if (!response.ok) {
             return NextResponse.json(
-                { error: data?.error ?? "Failed to generate presigned URL" },
+                { error: data?.error ?? "Failed to register image" },
                 { status: response.status }
             )
         }
 
-        const normalized = normalizePresignData(data)
-
-        if (!normalized.presignedUrl || !normalized.imageUrl) {
-            return NextResponse.json(
-                { error: "Upload service did not return usable image URLs" },
-                { status: 502 }
-            )
-        }
-
-        return NextResponse.json(normalized)
+        return NextResponse.json(data)
     } catch (error) {
-        console.error("Presign route error:", error)
+        console.error("Create image route error:", error)
         return NextResponse.json(
             { error: "Internal server error" },
             { status: 500 }

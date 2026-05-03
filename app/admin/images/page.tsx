@@ -1,48 +1,7 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
-import { createClient } from "@/lib/supabase/server"
+import { requireSuperAdmin } from "@/lib/admin/require-superadmin"
 import ImageUploadForm from "./image-upload-form"
-
-async function requireSuperAdmin() {
-    const supabase = await createClient()
-
-    const {
-        data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) redirect("/login")
-
-    const { data: profile } = await supabase
-        .from("profiles")
-        .select("is_superadmin")
-        .eq("id", user.id)
-        .single()
-
-    if (!profile?.is_superadmin) {
-        redirect("/access-denied")
-    }
-
-    return supabase
-}
-
-async function createImage(formData: FormData) {
-    "use server"
-
-    const url = String(formData.get("url") ?? "").trim()
-
-    if (!url) {
-        redirect("/admin/images")
-    }
-
-    const supabase = await createClient()
-
-    await supabase.from("images").insert({
-        url,
-        is_common_use: false,
-    })
-
-    redirect("/admin/images")
-}
 
 async function toggleCommonUse(formData: FormData) {
     "use server"
@@ -50,7 +9,7 @@ async function toggleCommonUse(formData: FormData) {
     const id = String(formData.get("id"))
     const currentValue = String(formData.get("currentValue")) === "true"
 
-    const supabase = await createClient()
+    const supabase = await requireSuperAdmin()
 
     await supabase
         .from("images")
@@ -67,7 +26,7 @@ async function deleteImage(formData: FormData) {
     "use server"
 
     const id = String(formData.get("id"))
-    const supabase = await createClient()
+    const supabase = await requireSuperAdmin()
 
     await supabase.from("images").delete().eq("id", id)
 

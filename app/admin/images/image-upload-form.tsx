@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { createClient } from "@/lib/supabase/client"
 
 export default function ImageUploadForm() {
     const [file, setFile] = useState<File | null>(null)
@@ -31,10 +30,11 @@ export default function ImageUploadForm() {
                 throw new Error(presignData?.error || "Failed to get presigned URL")
             }
 
-            const { presignedUrl, cdnUrl } = presignData
+            const presignedUrl = presignData.presignedUrl
+            const imageUrl = presignData.imageUrl
 
-            if (!presignedUrl || !cdnUrl) {
-                throw new Error("Missing presignedUrl or cdnUrl")
+            if (!presignedUrl || !imageUrl) {
+                throw new Error("Missing upload URL or image URL")
             }
 
             const uploadResponse = await fetch(presignedUrl, {
@@ -49,15 +49,18 @@ export default function ImageUploadForm() {
                 throw new Error("Failed to upload image")
             }
 
-            const supabase = createClient()
-
-            const { error: insertError } = await supabase.from("images").insert({
-                url: cdnUrl,
-                is_common_use: false,
+            const createResponse = await fetch("/api/images", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ url: imageUrl }),
             })
 
-            if (insertError) {
-                throw new Error(insertError.message)
+            const createData = await createResponse.json()
+
+            if (!createResponse.ok) {
+                throw new Error(createData?.error || "Failed to save image")
             }
 
             window.location.reload()

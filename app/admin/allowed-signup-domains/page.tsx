@@ -20,6 +20,30 @@ async function createDomain(formData: FormData) {
     redirect("/admin/allowed-signup-domains")
 }
 
+async function updateDomain(formData: FormData) {
+    "use server"
+
+    const id = Number(formData.get("id"))
+    const apex_domain = String(formData.get("apex_domain") ?? "").trim()
+
+    if (!id || !apex_domain) {
+        redirect("/admin/allowed-signup-domains")
+    }
+
+    const supabase = await requireSuperAdmin()
+
+    const { error } = await supabase
+        .from("allowed_signup_domains")
+        .update({ apex_domain })
+        .eq("id", id)
+
+    if (error) {
+        console.error("Error updating allowed signup domain:", error)
+    }
+
+    redirect("/admin/allowed-signup-domains")
+}
+
 async function deleteDomain(formData: FormData) {
     "use server"
 
@@ -54,7 +78,7 @@ export default async function AllowedSignupDomainsPage() {
                             Allowed Signup Domains
                         </h1>
                         <p className="mt-2 text-slate-600">
-                            Create, read, and delete allowed signup domains.
+                            Create, read, update, and delete allowed signup domains.
                         </p>
                     </div>
 
@@ -106,8 +130,21 @@ export default async function AllowedSignupDomainsPage() {
                                     {domain.id}
                                 </td>
 
-                                <td className="px-4 py-3 text-slate-900">
-                                    {domain.apex_domain}
+                                <td className="px-4 py-3">
+                                    <form action={updateDomain} className="flex gap-2">
+                                        <input type="hidden" name="id" value={domain.id} />
+                                        <input
+                                            name="apex_domain"
+                                            defaultValue={domain.apex_domain}
+                                            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900"
+                                        />
+                                        <button
+                                            type="submit"
+                                            className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700"
+                                        >
+                                            Update
+                                        </button>
+                                    </form>
                                 </td>
 
                                 <td className="px-4 py-3 text-slate-700">

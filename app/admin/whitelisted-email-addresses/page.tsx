@@ -24,6 +24,30 @@ async function createEmail(formData: FormData) {
     redirect("/admin/whitelisted-email-addresses")
 }
 
+async function updateEmail(formData: FormData) {
+    "use server"
+
+    const id = Number(formData.get("id"))
+    const email_address = String(formData.get("email_address") ?? "").trim()
+
+    if (!id || !email_address) {
+        redirect("/admin/whitelisted-email-addresses")
+    }
+
+    const supabase = await requireSuperAdmin()
+
+    const { error } = await supabase
+        .from("whitelist_email_addresses")
+        .update({ email_address })
+        .eq("id", id)
+
+    if (error) {
+        console.error("Error updating email:", error)
+    }
+
+    redirect("/admin/whitelisted-email-addresses")
+}
+
 async function deleteEmail(formData: FormData) {
     "use server"
 
@@ -65,7 +89,7 @@ export default async function Page() {
                             Whitelisted Emails
                         </h1>
                         <p className="mt-2 text-slate-600">
-                            Create, read, and delete whitelisted email addresses.
+                            Create, read, update, and delete whitelisted email addresses.
                         </p>
                     </div>
 
@@ -112,8 +136,21 @@ export default async function Page() {
                                 <td className="px-4 py-3 font-mono text-xs text-slate-500">
                                     {r.id}
                                 </td>
-                                <td className="px-4 py-3 text-slate-900">
-                                    {r.email_address}
+                                <td className="px-4 py-3">
+                                    <form action={updateEmail} className="flex gap-2">
+                                        <input type="hidden" name="id" value={r.id} />
+                                        <input
+                                            name="email_address"
+                                            defaultValue={r.email_address}
+                                            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900"
+                                        />
+                                        <button
+                                            type="submit"
+                                            className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700"
+                                        >
+                                            Update
+                                        </button>
+                                    </form>
                                 </td>
                                 <td className="px-4 py-3 text-slate-700">
                                     {r.created_datetime_utc
