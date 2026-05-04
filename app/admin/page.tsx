@@ -59,6 +59,7 @@ export default async function AdminPage() {
                     <AdminLink href="/admin/users" title="Users / Profiles" description="Read user profile records" />
                     <AdminLink href="/admin/images" title="Images" description="Create, read, update, and delete images" />
                     <AdminLink href="/admin/captions" title="Captions" description="Read generated captions" />
+                    <AdminLink href="/admin/caption-statistics" title="Caption Statistics" description="Read rating statistics for captions" />
                     <AdminLink href="/admin/caption-requests" title="Caption Requests" description="Read caption generation requests" />
                     <AdminLink href="/admin/caption-examples" title="Caption Examples" description="Create, read, update, and delete caption examples" />
                     <AdminLink href="/admin/terms" title="Terms" description="Create, read, update, and delete humor terms" />
